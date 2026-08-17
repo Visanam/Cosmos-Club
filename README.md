@@ -1,141 +1,128 @@
-# Visanam presents **Cosmos Club** — website
+# Visanam — website
 
-A premium, interactive marketing and sales site for a values-personalised
-children's comic subscription.
+Personalised values comics for children. The child gets the story; the parent
+gets the conversation.
 
-Built with **Next.js 15 (App Router) + React 19 + TypeScript**.
-No CSS framework, no animation library, **zero third-party runtime
-dependencies** — everything is hand-written CSS and native browser APIs. That
-keeps the bundle tiny, the Lighthouse scores high, and the number of things
-that can break your Vercel build close to zero.
+**Stack:** Vite · React 19 · TypeScript · wouter · tRPC · Drizzle (MySQL) ·
+Stripe · Tailwind 4 · framer-motion
+
+**To deploy, read [`DEPLOY.md`](./DEPLOY.md).** Step 0 of it is not optional.
 
 ---
 
-## Run it locally
+## Quick start
 
 ```bash
+cp .env.example .env
 npm install
 npm run dev          # http://localhost:3000
 ```
 
-```bash
-npm run build && npm start   # production build
-npm run typecheck            # TypeScript only
+---
+
+## Layout
+
+```
+api/index.ts          Vercel serverless entry — exports the Express app
+server/
+  app.ts              Express app factory (no listen, no static serving)
+  routers.ts          tRPC procedures: leads, comments, checkout
+  db.ts               Drizzle queries
+  stripeWebhook.ts    Records paid orders
+  _core/              Context, auth, tRPC setup, dev/prod static serving
+shared/
+  pricing.ts          THE pricing table — read by browser and server alike
+  const.ts            Cookie names, OAuth state helpers
+client/
+  index.html          Meta, Open Graph, JSON-LD
+  public/art/         Bundled WebP artwork
+  src/
+    App.tsx           Routes
+    components/       SiteShell, Seo, Reveal, StorybookComments, ui/*
+    hooks/useMotion   Site-wide scroll reveals, header, hero, image fade
+    lib/visanam.ts    Characters, episodes, values, plan builder
+    motion.css        The motion system
+drizzle/              Schema + SQL migrations
+docs/                 Design direction notes from the original build
 ```
 
-Node 18.18+ required.
+---
+
+## Things worth knowing before you change anything
+
+### Pricing is server-authoritative
+
+`shared/pricing.ts` is the single source of truth. The browser sends a **country
+name** to `checkout.createSession`; the server looks the amount up itself.
+
+This matters: the previous build let the browser send its own `amount`, so
+anyone could open devtools and buy a season for one rupee. If you ever add a
+plan or a discount, resolve it on the server — never accept a price from the
+client.
+
+### Money is only real when the webhook says so
+
+`/checkout?success=true` is just a URL anyone can visit. Order records are
+written by `/api/stripe/webhook` after signature verification, and the unique
+`stripeSessionId` makes Stripe's retries idempotent.
+
+### Moderation without an OAuth provider
+
+`adminProcedure` accepts either a signed-in admin user *or* a matching
+`x-admin-token` header (`ADMIN_TOKEN`). That is what lets `/story-notes` work on
+your own domain. Comparison is constant-time.
+
+### Artwork is bundled, not proxied
+
+Twelve WebP images in `client/public/art/`, roughly 4 MB total, at two widths
+each. The originals were 2–3 MB PNGs served through Manus storage — around
+18 MB for a single page of character portraits.
+
+To swap art, replace the file and keep the name. `small()` in `lib/visanam.ts`
+gives you the `@sm` variant for `srcSet`.
+
+### Motion
+
+`client/src/motion.css` plus `client/src/hooks/useMotion.ts`. Everything
+animates only `transform`, `opacity` and `filter`, so nothing triggers layout,
+and the whole system switches off under `prefers-reduced-motion`.
+
+Two deliberate design decisions in there, both of which cause visible bugs if
+you undo them:
+
+- **Only off-screen elements are revealed.** Hiding something the visitor can
+  already see makes it fade *out* first — a wash-out on every page load.
+- **The hero gets drift, not drift + parallax.** Both write `transform`, and a
+  CSS animation always beats a plain declaration, so the parallax would silently
+  do nothing.
+
+Add `class="lift"` for a hover raise, `class="press"` for a tactile press.
 
 ---
 
-## Deploy: GitHub → Vercel
+## Content model
 
-1. Create an empty repo on GitHub.
-2. From this folder:
+Everything editable is data, not markup:
 
-   ```bash
-   git init
-   git add .
-   git commit -m "Cosmos Club website v1"
-   git branch -M main
-   git remote add origin https://github.com/<you>/<repo>.git
-   git push -u origin main
-   ```
-
-3. On [vercel.com](https://vercel.com) → **Add New → Project** → import the repo.
-   Framework preset is detected as Next.js. No environment variables are needed
-   for v1. Click **Deploy**.
-4. Add your custom domain in **Project → Settings → Domains**.
-5. **Important:** open `lib/site.ts` and change `url` from
-   `https://www.visanam.com` to your real domain. It drives canonical URLs,
-   `sitemap.xml`, `robots.txt` and Open Graph tags.
-
-### Why geo-pricing works automatically on Vercel
-
-`app/layout.tsx` reads the `x-vercel-ip-country` header, which Vercel injects at
-the edge. That means the correct currency is in the **first byte of HTML** — no
-flash of the wrong price, no third-party API call. Locally (and on any non-Vercel
-host) the header is absent and the browser falls back to an IP lookup, then to
-USD. A visitor can always override it with the country selector, and the choice
-is remembered in `localStorage`.
-
-Reading that header makes pages server-rendered on every request rather than
-statically cached. That is the right trade for a pricing-led site. If you ever
-want fully static pages instead, delete the `headers()` call in
-`app/layout.tsx` and pass `serverCountry={null}`.
-
----
-
-## What's in here
-
-| Route | What it is |
+| To change | Edit |
 |---|---|
-| `/` | Landing page — the guilt hook, how it works, live portal demo, cast, pricing, FAQ |
-| `/values-compass` | **The flagship interactive.** 8-question quiz → 3 values, scored bars, sample TALK questions, email capture |
-| `/how-it-works` | Episode-by-episode timeline, all 12 values, season arc |
-| `/characters` | Cast explorer, the interactive Sprig mood meter, model-sheet section |
-| `/peek-inside` | Deliberate glimpse: world art, 4 panels, one locked panel. **No plot.** |
-| `/parent-portal` | Working demo of what a parent receives after each episode |
-| `/pricing` | PPP geo-pricing, 3 plans, pricing FAQ |
-| `/schools` | B2B — NEP 2020 SEL programme |
-| `/celebrations` | B2B2C — bespoke wedding / event comics |
-| `/journal`, `/journal/[slug]` | SEO blog, 4 full articles seeded |
-| `/faq` | Long-form FAQ with `FAQPage` schema |
-| `/checkout` | Full checkout UI in **demo mode** — payment provider not yet connected |
-| `/contact` | Routed enquiry form (general / school / bespoke / press) |
-| `/privacy`, `/terms` | Placeholder legal — **have a lawyer replace before you take money** |
+| Prices and countries | `shared/pricing.ts` |
+| Characters | `lib/visanam.ts` → `characters` |
+| Episodes | `lib/visanam.ts` → `episodes` |
+| Values, prompts, questions | `lib/visanam.ts` → `valueOptions`, `planQuestions` |
+| The parent plan generator | `lib/visanam.ts` → `buildPlan` |
+| Navigation | `components/SiteShell.tsx` |
 
 ---
 
-## Editing content — where things live
+## Open questions for the founder
 
-Everything editable is plain data. You do not need to touch a component.
+Two content decisions the site cannot make for you:
 
-| To change… | Edit |
-|---|---|
-| Prices, currencies, countries | `lib/pricing.ts` |
-| Plan names and feature lists | `lib/pricing.ts` → `PLANS` |
-| The 12 values and their copy | `lib/values.ts` → `VALUES` |
-| Quiz questions and scoring | `lib/values.ts` → `QUIZ` |
-| Conversation questions per value | `lib/values.ts` → `talkQuestionsFor` |
-| Characters, roles, blurbs | `lib/cast.ts` |
-| Episode titles, panel captions | `lib/episodes.ts` |
-| Blog posts | `lib/posts.ts` — append to `POSTS` |
-| Brand name, email, domain, nav | `lib/site.ts` |
-| Colours, type, spacing | `app/globals.css` (top of file) |
-
-### Adding a blog post
-
-Append an object to `POSTS` in `lib/posts.ts`. The route, metadata, JSON-LD,
-sitemap entry and related-posts links are all generated for you.
-
----
-
-## Images
-
-All artwork lives in `public/images/`, already converted to WebP at two sizes
-(~5 MB total for 30 files). Sources were your character sheets and key art.
-
-```
-public/images/
-  scenery/   village-day, village-dusk, village-night, forest-day, forest-night, ship
-  cast/      neo, dev, tara, sia, sprig, vorax        (uniform 2:3 crops)
-  sheets/    cast-lineup, sprig-model, tara-model, dev-model, sia-model, neo-model
-  og.jpg     1200×630 social share card
-```
-
-To swap art, replace the file and keep the name. `next/image` handles the rest.
-
----
-
-## Not yet connected (deliberately)
-
-These are the four wires to attach before launch. Each has a `TODO` comment at
-the exact spot:
-
-1. **Payments** — `app/checkout/CheckoutClient.tsx`. See `docs/PAYMENTS.md`.
-2. **Email capture** — `components/ValuesCompass.tsx` (quiz result form).
-3. **Contact form** — `app/contact/ContactForm.tsx`.
-4. **Analytics / pixels** — see `docs/SEO-AND-MARKETING.md`.
-
-Read `docs/NOTES-FOR-FOUNDER.md` before you publish — it lists the placeholder
-copy to replace and two content questions only you can answer.
+1. **Age bands.** The parent journey offers 4–6, 7–9 and 10–12. The comic's own
+   canon is written for 6–9 with a 600-word cap. Selling to a four-year-old or a
+   twelve-year-old sets up refunds.
+2. **Vorax.** This site describes him as "a strange force beyond the hills". The
+   story bible has him arriving alone, impersonating the teacher, and being
+   hungry rather than wicked. Both cannot be true, and the sales page and the
+   comic need to agree.

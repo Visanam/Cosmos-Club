@@ -1,0 +1,9 @@
+/* A restrained rhythm layer applied after page-specific styles. */
+:root { --reading-space: clamp(16px, 2vw, 25px); --section-space: clamp(88px, 10vw, 142px); }
+.site-shell main :where(h1, h2, h3) { text-wrap: balance; font-family: "Eczar", Georgia, serif; }
+.site-shell main :where(p) { text-wrap: pretty; }
+.site-shell main :where(.section-kicker, .eyebrow, .step-label, .brand, .tag-row span, .watermark) { font-family: "Manrope", sans-serif; }
+.site-shell main :where(.button, .nav-cta) { min-height: 47px; letter-spacing: -.01em; }
+.site-shell main :where([id]) { scroll-margin-top: 112px; }
+.hero-editorial-note { display: flex; align-items: flex-start; gap: 12px; max-width: 560px; margin: 0 0 29px; padding: 15px 0; border-top: 1px solid rgba(255, 250, 226, .32); border-bottom: 1px solid rgba(255, 250, 226, .18); }.hero-editorial-note .note-orb { flex: 0 0 auto; margin-top: 5px; }.hero-editorial-note p { margin: 0; color: #e8eee1; font-size: 13px; line-height: 1.65; }.hero-editorial-note b { color: #fff7d4; }
+@media (max-width: 760px) { :root { --section-space: 76px; }.site-shell main :where(.button) { min-height: 45px; }.hero-editorial-note { margin-bottom: 24px; }.hero-editorial-note p { font-size: 12px; } }

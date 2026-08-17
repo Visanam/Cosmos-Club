@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /checkout
+Disallow: /story-notes
+Disallow: /keepsake/
+
+Sitemap: https://visanam.com/sitemap.xml

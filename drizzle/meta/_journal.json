@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1786978577007,
+      "tag": "0000_tiresome_titanium_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1786979175737,
+      "tag": "0001_milky_queen_noir",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786980419711,
+      "tag": "0002_chilly_firedrake",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1786980419712,
+      "tag": "0003_orders",
+      "breakpoints": true
+    }
+  ]
+}
