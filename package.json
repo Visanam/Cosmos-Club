@@ -1,0 +1,26 @@
+{
+  "name": "visanam-cosmos-club",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Visanam presents Cosmos Club — a values-personalised comic subscription for children aged 6-9.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.7",
+    "@types/react": "19.0.7",
+    "@types/react-dom": "19.0.3",
+    "typescript": "5.7.3"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}
