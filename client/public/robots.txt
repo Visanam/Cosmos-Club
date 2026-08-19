@@ -4,4 +4,4 @@ Disallow: /checkout
 Disallow: /story-notes
 Disallow: /keepsake/
 
-Sitemap: https://visanam.com/sitemap.xml
+Sitemap: https://visanam.net/sitemap.xml
