@@ -3,7 +3,7 @@ import { Seo } from "@/components/Seo";
 
 const questions = [
   ["What is Visanam?", "Visanam is a story-led values-comic experience for children, paired with a personal parent wraparound that helps families talk about the themes that matter at home."],
-  ["What age is Season 1 designed for?", "Season 1 is created for children aged 4–12. The Parent Insight Journey adapts its prompts for 4–6, 7–9, and 10–12 year-old readers."],
+  ["What age is Season 1 designed for?", "Season 1 is created for children aged 6–12. The Parent Insight Journey adapts its prompts for 6–7, 8–9, and 10–12 year-old readers."],
   ["Does each child receive a different comic?", "The core illustrated comic is the same shared world for every child. The personal layer lives in the parent experience: the value focus, conversation questions, recap framing, and reflection prompts."],
   ["Which values can I focus on?", "You can begin with courage, empathy, discipline, anger management, time management, kindness, honesty, or resilience. More than one value can grow through a season."],
   ["Will the full story be publicly available?", "No. Public pages offer a spoiler-safe glimpse only. The full arc, episodes, and parent material are protected for families who purchase Season 1."],
