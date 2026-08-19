@@ -16,14 +16,14 @@ describe("ParentJourney", () => {
     expect(screen.getByText("Sprig’s glow guide")).toBeTruthy();
     expect(screen.getByText(/The story gives the skill a face, a feeling, and a gentle next step/i)).toBeTruthy();
     expect(screen.getByRole("heading", { name: /Who are we making room for/i })).toBeTruthy();
-    expect(screen.getByText(/For readers aged 4–12/i)).toBeTruthy();
+    expect(screen.getByText(/For readers aged 6–12/i)).toBeTruthy();
   });
 
   it("shows a tangible three-part ritual preview once a parent completes the journey", async () => {
     const user = userEvent.setup();
     render(<ParentJourney />);
 
-    await user.click(screen.getByRole("button", { name: /4–6 years/i }));
+    await user.click(screen.getByRole("button", { name: /6-7 years/i }));
     await user.click(screen.getByRole("button", { name: /Continue/i }));
     await user.click(screen.getByRole("button", { name: /Kindness/i }));
     await user.click(screen.getByRole("button", { name: /Continue/i }));
