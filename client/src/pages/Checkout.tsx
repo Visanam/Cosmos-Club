@@ -1,4 +1,4 @@
-import { ArrowLeft, BellRing, Check, Lock, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, BellRing, Check, Lock, Sparkles } from "lucide-react";
 import { useMemo } from "react";
 import { Link } from "wouter";
 import { Seo } from "@/components/Seo";
@@ -21,7 +21,8 @@ import { getPricingForTimezone } from "@/lib/visanam";
  * the list built here is the first audience to tell.
  */
 
-const TALLY_FORM_ID = "LZ4Gvp";
+/** The public form. Change this one line if the form is ever replaced. */
+const WAITLIST_URL = "https://tally.so/r/LZ4Gvp";
 
 const includes = [
   "Six illustrated digital episodes",
@@ -92,25 +93,34 @@ export default function Checkout() {
                 <strong>{tier.display}</strong>
               </div>
 
-              <p
-                className="section-kicker"
-                style={{ margin: "20px 0 4px", display: "flex", alignItems: "center", gap: 8 }}
-              >
-                <BellRing size={14} /> Join the list
-              </p>
+              <div style={{ paddingTop: 26, display: "grid", gap: 14 }}>
+                <p
+                  className="section-kicker"
+                  style={{ margin: 0, display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <BellRing size={14} /> Two questions, ten seconds
+                </p>
 
-              <iframe
-                src={`https://tally.so/embed/${TALLY_FORM_ID}?alignLeft=1&hideTitle=1&transparentBackground=1`}
-                width="100%"
-                height="460"
-                title="Join the Visanam Season 1 waitlist"
-                style={{ border: 0, display: "block" }}
-              />
+                <p style={{ margin: 0, color: "#5b6f68", fontSize: 14, lineHeight: 1.65 }}>
+                  We will ask for your email and your child’s age range. Nothing
+                  else — no card, no account, no name.
+                </p>
 
-              <p className="checkout-secure">
-                <Lock size={13} /> One email when Season 1 opens. Nothing else,
-                and you can leave the list at any time.
-              </p>
+                <a
+                  href={WAITLIST_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="button button-dark"
+                  style={{ justifyContent: "center" }}
+                >
+                  Join the Season 1 list <ArrowRight size={16} />
+                </a>
+
+                <p className="checkout-secure" style={{ margin: 0 }}>
+                  <Lock size={13} /> One email when Season 1 opens. Nothing else,
+                  and you can leave the list at any time.
+                </p>
+              </div>
             </section>
           </div>
         </div>
