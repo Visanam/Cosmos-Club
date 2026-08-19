@@ -4,12 +4,22 @@ import { Link } from "wouter";
 import { Seo } from "@/components/Seo";
 import { getPricingForTimezone } from "@/lib/visanam";
 
-// Season 1 waitlist. A plain HTML form on our own page - no embedded widget,
-// no third-party page, no JavaScript needed to submit. Submissions are
-// relayed to the inbox below by FormSubmit.
-//
-// FIRST SUBMISSION ONLY: FormSubmit emails this address a one-time activation
-// link. Click it, and every later submission arrives automatically.
+/**
+ * VISANAM-WAITLIST-FORM-V3
+ *
+ * Season 1 waitlist. Payments are not live yet, so this page collects an email
+ * instead of taking a card.
+ *
+ * The form is plain HTML and posts to FormSubmit, which emails the signup
+ * straight to us. Earlier versions used an embedded third-party form and then a
+ * link to one; both were blocked or awkward in real browsers. Plain fields work
+ * everywhere and cannot be broken by a script.
+ *
+ * It does not ask for the child's name. Under India's DPDP Act anyone under 18
+ * is a child and their personal data needs verifiable parental consent; COPPA
+ * and GDPR-K impose similar duties elsewhere. We only need an age range.
+ */
+
 const FORM_ENDPOINT = "https://formsubmit.co/visanammags@gmail.com";
 
 const includes = [
@@ -19,16 +29,22 @@ const includes = [
 ];
 
 export default function Checkout() {
+  // Indicative only — an approximate price from the device's time zone, so a
+  // visitor knows roughly what to expect before joining the list.
   const tier = useMemo(
     () => getPricingForTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone),
     []
   );
 
+  const sent =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("sent") === "1";
+
   return (
     <>
       <Seo
         title="Join the Season 1 list"
-        description="Season 1 opens soon. Join the list and you will be the first to know."
+        description="Season 1 opens soon. Join the list and you will be the first to know, with a founding price for early families."
         noIndex
       />
 
@@ -79,19 +95,40 @@ export default function Checkout() {
                 <strong>{tier.display}</strong>
               </div>
 
-              <p
-                className="section-kicker"
-                style={{ margin: "22px 0 0", display: "flex", alignItems: "center", gap: 8 }}
-              >
-                <BellRing size={14} /> Two questions, ten seconds
-              </p>
-
               <form action={FORM_ENDPOINT} method="POST">
                 <input type="hidden" name="_subject" value="New Visanam waitlist signup" />
                 <input type="hidden" name="_captcha" value="false" />
                 <input type="hidden" name="_template" value="table" />
-                <input type="hidden" name="_next" value="https://visanam.net/pricing" />
-                <input type="text" name="_honey" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
+                <input type="hidden" name="_next" value="https://visanam.net/checkout?sent=1" />
+                <input
+                  type="text"
+                  name="_honey"
+                  style={{ display: "none" }}
+                  tabIndex={-1}
+                  autoComplete="off"
+                />
+
+                <p
+                  className="section-kicker"
+                  style={{ margin: 0, display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <BellRing size={14} /> Two questions, ten seconds
+                </p>
+
+                {sent && (
+                  <p
+                    style={{
+                      margin: 0,
+                      padding: "12px 14px",
+                      borderRadius: 10,
+                      background: "#edf3e7",
+                      color: "#2f5a4c",
+                      fontSize: 13,
+                    }}
+                  >
+                    You’re on the list. We’ll email you the moment Season 1 opens.
+                  </p>
+                )}
 
                 <label htmlFor="waitlist-email">
                   Your email
@@ -118,7 +155,7 @@ export default function Checkout() {
                   Join the Season 1 list <ArrowRight size={16} />
                 </button>
 
-                <p className="checkout-secure">
+                <p className="checkout-secure" style={{ margin: 0 }}>
                   <Lock size={13} /> One email when Season 1 opens. Nothing else,
                   and you can leave the list at any time.
                 </p>
