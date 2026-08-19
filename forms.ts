@@ -17,7 +17,7 @@
  * That is the only line in the whole website you need to change.
  */
 
-export const WEB3FORMS_ACCESS_KEY = "PASTE-YOUR-WEB3FORMS-ACCESS-KEY-HERE";
+export const WEB3FORMS_ACCESS_KEY = "4c89b9ae-19a2-48c3-bca5-cf50ede279a2";
 
 /** Web3Forms' documented submission endpoint. Do not change. */
 export const FORM_ENDPOINT = "https://api.web3forms.com/submit";
