@@ -1,21 +1,120 @@
-import { ArrowLeft, Check, LoaderCircle, LockKeyhole, Sparkles } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { ArrowLeft, BellRing, Check, Lock, Sparkles } from "lucide-react";
+import { useMemo } from "react";
 import { Link } from "wouter";
-import { toast } from "sonner";
 import { Seo } from "@/components/Seo";
-import { getPricingForTimezone, valueOptions } from "@/lib/visanam";
-import { trpc } from "@/lib/trpc";
+import { getPricingForTimezone } from "@/lib/visanam";
+
+/**
+ * Season 1 waitlist.
+ *
+ * Payments are not live yet, so this page collects an email instead of taking
+ * a card. It replaced a checkout form that could never complete — visitors
+ * reached it, pressed "continue to secure checkout", and got an error.
+ *
+ * It also no longer asks for the child's name. Under India's DPDP Act anyone
+ * under 18 is a child and their personal data needs verifiable parental
+ * consent; COPPA and GDPR-K impose similar duties elsewhere. The product needs
+ * to know roughly how old the reader is so the parent guide can be pitched
+ * correctly. It has never needed to know who they are.
+ *
+ * When the payment provider is live, this becomes the real checkout again and
+ * the list built here is the first audience to tell.
+ */
+
+const TALLY_FORM_ID = "LZ4Gvp";
+
+const includes = [
+  "Six illustrated digital episodes",
+  "Values-led Parent Insight Plan",
+  "Conversation cards and episode recaps",
+];
 
 export default function Checkout() {
-  const tier = useMemo(() => getPricingForTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone), []);
-  const suggestedValue = new URLSearchParams(window.location.search).get("value");
-  const [parentName, setParentName] = useState(() => sessionStorage.getItem("visanam-checkout-parent") || "");
-  const [childNameAge, setChildNameAge] = useState(() => sessionStorage.getItem("visanam-checkout-child") || "");
-  const [valueFocus, setValueFocus] = useState(() => valueOptions.some((option) => option.value === suggestedValue) ? suggestedValue! : sessionStorage.getItem("visanam-journey-value") || "Courage");
-  const checkout = trpc.checkout.createSession.useMutation({ onSuccess: ({ url }) => { toast.success("Your secure checkout is opening in a new tab."); window.open(url, "_blank", "noopener,noreferrer"); }, onError: (error) => toast.error(error.message || "We could not start checkout. Please try again.") });
-  useEffect(() => { sessionStorage.setItem("visanam-checkout-parent", parentName); sessionStorage.setItem("visanam-checkout-child", childNameAge); }, [parentName, childNameAge]);
-  const submit = (event: FormEvent) => { event.preventDefault(); checkout.mutate({ parentName, childNameAge, valueFocus, country: tier.country }); };
-  return <><Seo title="Complete your Season 1 order" description="Securely complete your Visanam Season 1 purchase and begin a values-led comic experience with your child." />
-    <section className="checkout-shell"><div className="checkout-wrap"><Link href="/pricing" className="small-back"><ArrowLeft size={15}/> Back to pricing</Link><div className="checkout-grid"><section><p className="section-kicker"><Sparkles size={14}/> Season 1 begins here</p><h1>Bring the story<br /><em>home.</em></h1><p className="checkout-lede">Tell us just enough to shape your parent wraparound. Your payment takes place on Stripe’s secure checkout page.</p><div className="checkout-includes"><p>YOUR SEASON INCLUDES</p>{["Six illustrated digital episodes", "Values-led Parent Insight Plan", "Conversation cards and episode recaps"].map((item) => <span key={item}><Check size={16}/>{item}</span>)}</div></section><section className="checkout-card"><div className="checkout-price"><div><span>VISANAM SEASON 1</span><p>Based on your {tier.country} region</p></div><strong>{tier.display}</strong></div><form onSubmit={submit}><label>Parent name<input value={parentName} onChange={(event) => setParentName(event.target.value)} placeholder="Your first and last name" required /></label><label>Child name plus age<input value={childNameAge} onChange={(event) => setChildNameAge(event.target.value)} placeholder="For example: Aanya, 7" required /></label><label>Selected values focus<select value={valueFocus} onChange={(event) => setValueFocus(event.target.value)}>{valueOptions.map((option) => <option key={option.value} value={option.value}>{option.value}</option>)}</select></label><button className="button button-dark checkout-submit" disabled={checkout.isPending}>{checkout.isPending ? <><LoaderCircle className="spin" size={16}/> Opening secure checkout…</> : <>Continue to secure checkout <LockKeyhole size={16}/></>}</button><p className="checkout-secure"><LockKeyhole size={13}/> Payments are securely processed by Stripe. We never see your card details.</p></form></section></div></div></section>
-  </>;
+  // Indicative only — an approximate price from the device's time zone, so a
+  // visitor knows roughly what to expect before joining the list.
+  const tier = useMemo(
+    () => getPricingForTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone),
+    []
+  );
+
+  return (
+    <>
+      <Seo
+        title="Join the Season 1 list"
+        description="Season 1 opens soon. Join the list and you will be the first to know, with a founding price for early families."
+        noIndex
+      />
+
+      <section className="checkout-shell">
+        <div className="checkout-wrap">
+          <Link href="/pricing" className="small-back">
+            <ArrowLeft size={15} /> Back to pricing
+          </Link>
+
+          <div className="checkout-grid">
+            <section>
+              <p className="section-kicker">
+                <Sparkles size={14} /> Season 1 opens soon
+              </p>
+              <h1>
+                Be first
+                <br />
+                <em>through the door.</em>
+              </h1>
+              <p className="checkout-lede">
+                We are finishing the final episodes and opening a limited first
+                season to a small group of families. Leave your email and you
+                will hear from us before anyone else.
+              </p>
+
+              <div className="checkout-includes">
+                <p>YOUR SEASON WILL INCLUDE</p>
+                {includes.map((item) => (
+                  <span key={item}>
+                    <Check size={16} />
+                    {item}
+                  </span>
+                ))}
+              </div>
+
+              <p className="checkout-secure" style={{ marginTop: 22 }}>
+                <Lock size={13} /> We never create an account for your child, and
+                we never ask for their name.
+              </p>
+            </section>
+
+            <section className="checkout-card">
+              <div className="checkout-price">
+                <div>
+                  <span>VISANAM SEASON 1</span>
+                  <p>Expected price in your region</p>
+                </div>
+                <strong>{tier.display}</strong>
+              </div>
+
+              <p
+                className="section-kicker"
+                style={{ margin: "20px 0 4px", display: "flex", alignItems: "center", gap: 8 }}
+              >
+                <BellRing size={14} /> Join the list
+              </p>
+
+              <iframe
+                src={`https://tally.so/embed/${TALLY_FORM_ID}?alignLeft=1&hideTitle=1&transparentBackground=1`}
+                width="100%"
+                height="460"
+                title="Join the Visanam Season 1 waitlist"
+                style={{ border: 0, display: "block" }}
+              />
+
+              <p className="checkout-secure">
+                <Lock size={13} /> One email when Season 1 opens. Nothing else,
+                and you can leave the list at any time.
+              </p>
+            </section>
+          </div>
+        </div>
+      </section>
+    </>
+  );
 }
