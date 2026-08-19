@@ -4,25 +4,13 @@ import { Link } from "wouter";
 import { Seo } from "@/components/Seo";
 import { getPricingForTimezone } from "@/lib/visanam";
 
-/**
- * Season 1 waitlist.
- *
- * Payments are not live yet, so this page collects an email instead of taking
- * a card. It replaced a checkout form that could never complete — visitors
- * reached it, pressed "continue to secure checkout", and got an error.
- *
- * It also no longer asks for the child's name. Under India's DPDP Act anyone
- * under 18 is a child and their personal data needs verifiable parental
- * consent; COPPA and GDPR-K impose similar duties elsewhere. The product needs
- * to know roughly how old the reader is so the parent guide can be pitched
- * correctly. It has never needed to know who they are.
- *
- * When the payment provider is live, this becomes the real checkout again and
- * the list built here is the first audience to tell.
- */
-
-/** The public form. Change this one line if the form is ever replaced. */
-const WAITLIST_URL = "https://tally.so/r/LZ4Gvp";
+// Season 1 waitlist. A plain HTML form on our own page - no embedded widget,
+// no third-party page, no JavaScript needed to submit. Submissions are
+// relayed to the inbox below by FormSubmit.
+//
+// FIRST SUBMISSION ONLY: FormSubmit emails this address a one-time activation
+// link. Click it, and every later submission arrives automatically.
+const FORM_ENDPOINT = "https://formsubmit.co/visanammags@gmail.com";
 
 const includes = [
   "Six illustrated digital episodes",
@@ -31,8 +19,6 @@ const includes = [
 ];
 
 export default function Checkout() {
-  // Indicative only — an approximate price from the device's time zone, so a
-  // visitor knows roughly what to expect before joining the list.
   const tier = useMemo(
     () => getPricingForTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone),
     []
@@ -42,7 +28,7 @@ export default function Checkout() {
     <>
       <Seo
         title="Join the Season 1 list"
-        description="Season 1 opens soon. Join the list and you will be the first to know, with a founding price for early families."
+        description="Season 1 opens soon. Join the list and you will be the first to know."
         noIndex
       />
 
@@ -93,34 +79,50 @@ export default function Checkout() {
                 <strong>{tier.display}</strong>
               </div>
 
-              <div style={{ paddingTop: 26, display: "grid", gap: 14 }}>
-                <p
-                  className="section-kicker"
-                  style={{ margin: 0, display: "flex", alignItems: "center", gap: 8 }}
-                >
-                  <BellRing size={14} /> Two questions, ten seconds
-                </p>
+              <p
+                className="section-kicker"
+                style={{ margin: "22px 0 0", display: "flex", alignItems: "center", gap: 8 }}
+              >
+                <BellRing size={14} /> Two questions, ten seconds
+              </p>
 
-                <p style={{ margin: 0, color: "#5b6f68", fontSize: 14, lineHeight: 1.65 }}>
-                  We will ask for your email and your child’s age range. Nothing
-                  else — no card, no account, no name.
-                </p>
+              <form action={FORM_ENDPOINT} method="POST">
+                <input type="hidden" name="_subject" value="New Visanam waitlist signup" />
+                <input type="hidden" name="_captcha" value="false" />
+                <input type="hidden" name="_template" value="table" />
+                <input type="hidden" name="_next" value="https://visanam.net/pricing" />
+                <input type="text" name="_honey" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
 
-                <a
-                  href={WAITLIST_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="button button-dark"
-                  style={{ justifyContent: "center" }}
-                >
+                <label htmlFor="waitlist-email">
+                  Your email
+                  <input
+                    id="waitlist-email"
+                    type="email"
+                    name="email"
+                    required
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                  />
+                </label>
+
+                <label htmlFor="waitlist-age">
+                  Your child’s age
+                  <select id="waitlist-age" name="childAgeBand" defaultValue="6–7 years" required>
+                    <option value="6–7 years">6–7 years</option>
+                    <option value="8–9 years">8–9 years</option>
+                    <option value="10–12 years">10–12 years</option>
+                  </select>
+                </label>
+
+                <button type="submit" className="button button-dark checkout-submit">
                   Join the Season 1 list <ArrowRight size={16} />
-                </a>
+                </button>
 
-                <p className="checkout-secure" style={{ margin: 0 }}>
+                <p className="checkout-secure">
                   <Lock size={13} /> One email when Season 1 opens. Nothing else,
                   and you can leave the list at any time.
                 </p>
-              </div>
+              </form>
             </section>
           </div>
         </div>
