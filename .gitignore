@@ -1,0 +1,9 @@
+# Private local environment values. Keep only the secret-free template in Git.
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Generated dependencies and build output.
+node_modules/
+dist/
