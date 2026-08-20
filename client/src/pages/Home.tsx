@@ -2,6 +2,7 @@ import { ArrowDown, ArrowRight, Sparkles } from "lucide-react";
 import React from "react";
 import { Link } from "wouter";
 import { motion, useReducedMotion, useScroll } from "framer-motion";
+import { AmbientVideo } from "@/components/AmbientVideo";
 import { Seo } from "@/components/Seo";
 import { Reveal } from "@/components/Reveal";
 import { assets, valueOptions } from "@/lib/visanam";
@@ -11,7 +12,8 @@ const organizationSchema = {
   "@type": "Organization",
   name: "Visanam",
   description: "Personalized values-based comics that give parents gentle ways to start meaningful conversations with their children.",
-  url: "https://visanam.example",
+  url: "https://visanam.net",
+  logo: "https://visanam.net/art/og.jpg",
 };
 
 const ritualSteps = [
@@ -29,7 +31,12 @@ export default function Home() {
     <div className="journey-progress" aria-hidden="true"><motion.span style={{ scaleX: shouldReduceMotion ? 0 : scrollYProgress }} /></div>
 
     <section className="oru-video-hero" aria-labelledby="home-title">
-      <video className="oru-home-video" src="/media/visanam-story-passage.mp4" poster="/art/village-day.webp" muted autoPlay loop playsInline preload="metadata" aria-label="A gentle sunrise-to-night passage through Oru" />
+      <AmbientVideo
+        className="oru-home-video"
+        src="/media/visanam-story-passage.mp4"
+        poster="/art/village-day.webp"
+        label="background film"
+      />
       <div className="oru-home-fallback" aria-hidden="true" />
       <div className="oru-home-shade" aria-hidden="true" />
       <div className="container oru-home-copy">

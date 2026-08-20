@@ -16,6 +16,7 @@ import Checkout from "./pages/Checkout";
 import Schools from "./pages/Schools";
 import Events from "./pages/Events";
 import Faq from "./pages/Faq";
+import Contact from "./pages/Contact";
 import { Legal } from "./pages/Legal";
 import StoryNotesAdmin from "./pages/StoryNotesAdmin";
 import KeepsakePreview from "./pages/KeepsakePreview";
@@ -34,6 +35,7 @@ function Router() {
     <Route path="/schools" component={Schools} />
     <Route path="/events" component={Events} />
     <Route path="/faq" component={Faq} />
+    <Route path="/contact" component={Contact} />
     <Route path="/terms">{() => <Legal type="terms" />}</Route>
     <Route path="/privacy">{() => <Legal type="privacy" />}</Route>
     <Route path="/refund">{() => <Legal type="refund" />}</Route>

@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
-Disallow: /checkout
+# /checkout is a waitlist page. It carries a page-level noindex tag, so it must
+# stay crawlable — a Disallow would stop crawlers ever reading that tag.
 Disallow: /story-notes
 Disallow: /keepsake/
 

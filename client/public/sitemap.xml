@@ -10,6 +10,7 @@
   <url><loc>https://visanam.net/schools</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://visanam.net/events</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://visanam.net/faq</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://visanam.net/contact</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://visanam.net/terms</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://visanam.net/privacy</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>
   <url><loc>https://visanam.net/refund</loc><changefreq>weekly</changefreq><priority>0.4</priority></url>

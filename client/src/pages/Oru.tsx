@@ -1,13 +1,14 @@
 import React from "react";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "wouter";
+import { AmbientVideo } from "@/components/AmbientVideo";
 import { Seo } from "@/components/Seo";
 
 export default function Oru() {
   return <main className="oru-page" data-testid="oru-page">
     <Seo title="Enter Oru" description="Step quietly into Oru, the story world where shared conversations begin." />
     <section className="oru-page-hero" aria-labelledby="oru-page-title">
-      <video className="oru-page-video" src="/media/oru-lantern-walk.mp4" poster="/art/village-night.webp" autoPlay muted loop playsInline preload="metadata" aria-label="A quiet blue-hour walk through the lantern-lit village of Oru" />
+      <AmbientVideo className="oru-page-video" src="/media/oru-lantern-walk.mp4" poster="/art/village-night.webp" label="background film" />
       <div className="oru-page-fallback" aria-hidden="true" />
       <div className="oru-page-shade" aria-hidden="true" />
       <div className="container oru-page-copy">

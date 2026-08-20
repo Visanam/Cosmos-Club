@@ -135,6 +135,16 @@ const routes = [
     ],
   },
   {
+    path: "/contact",
+    title: "Contact Visanam",
+    description:
+      "Reach the people behind Visanam — for parents, schools, press and partnerships. We read every message ourselves.",
+    heading: "Say hello. We would love to hear from you.",
+    body: [
+      "For parents and families, schools and educators, and press and partnerships — write to hello@visanam.net, or use the form on the page. There is a real person at the other end and we usually reply within two working days.",
+    ],
+  },
+  {
     path: "/faq",
     title: "Frequently asked questions",
     description:

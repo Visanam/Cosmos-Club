@@ -1,17 +1,15 @@
 import { ArrowRight, Check, PartyPopper } from "lucide-react";
 import { Seo } from "@/components/Seo";
+import { FORM_ENDPOINT, WEB3FORMS_ACCESS_KEY, formsAreConfigured } from "@/lib/forms";
 import { assets } from "@/lib/visanam";
 
 /**
- * VISANAM-EVENTS-FORM-V2
+ * VISANAM-EVENTS-FORM-V3
  *
- * The bespoke-comic enquiry form posts as a plain HTML form to FormSubmit,
- * which emails the enquiry straight to us. It used to post to our own server,
- * which is currently returning an error, so every enquiry sent through this
- * page was being silently lost.
+ * The bespoke-comic enquiry form is plain HTML and posts to Web3Forms, which
+ * emails the enquiry to us. It used to post to our own server, which is
+ * currently returning an error, so every enquiry through this page was lost.
  */
-
-const FORM_ENDPOINT = "https://formsubmit.co/visanammags@gmail.com";
 
 export default function Events() {
   const sent =
@@ -103,36 +101,27 @@ export default function Events() {
           </div>
 
           <form className="lead-form" action={FORM_ENDPOINT} method="POST">
-            <input type="hidden" name="_subject" value="New Visanam bespoke comic enquiry" />
-            <input type="hidden" name="_captcha" value="false" />
-            <input type="hidden" name="_template" value="table" />
-            <input type="hidden" name="_next" value="https://visanam.net/events?sent=1" />
+            <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
+            <input type="hidden" name="subject" value="New Visanam bespoke comic enquiry" />
+            <input type="hidden" name="from_name" value="Visanam website" />
+            <input type="hidden" name="redirect" value="https://visanam.net/events?sent=1" />
             <input
-              type="text"
-              name="_honey"
+              type="checkbox"
+              name="botcheck"
               style={{ display: "none" }}
               tabIndex={-1}
-              autoComplete="off"
+              aria-hidden="true"
             />
 
             {sent && (
-              <p
-                style={{
-                  margin: 0,
-                  padding: "12px 14px",
-                  borderRadius: 10,
-                  background: "#edf3e7",
-                  color: "#2f5a4c",
-                  fontSize: 13,
-                }}
-              >
+              <p className="form-sent" role="status">
                 Thank you — your story idea is safely with us. We’ll reply soon.
               </p>
             )}
 
             <label htmlFor="event-name">
               Your name
-              <input id="event-name" name="contactName" type="text" required autoComplete="name" />
+              <input id="event-name" name="Name" type="text" required autoComplete="name" />
             </label>
 
             <div className="form-split">
@@ -142,13 +131,13 @@ export default function Events() {
               </label>
               <label htmlFor="event-phone">
                 Phone
-                <input id="event-phone" name="phone" type="tel" required autoComplete="tel" />
+                <input id="event-phone" name="Phone" type="tel" required autoComplete="tel" />
               </label>
             </div>
 
             <label htmlFor="event-type">
               Event type
-              <select id="event-type" name="eventType" defaultValue="Wedding">
+              <select id="event-type" name="Event type" defaultValue="Wedding">
                 <option value="Wedding">Wedding</option>
                 <option value="Reception">Reception</option>
                 <option value="Corporate event">Corporate event</option>
@@ -160,14 +149,20 @@ export default function Events() {
               Tell us about the occasion
               <textarea
                 id="event-message"
-                name="message"
+                name="Message"
                 placeholder="Date, location, guests, the feeling you want to create…"
                 required
               />
             </label>
 
-            <button type="submit" className="button button-dark">
-              Share your story idea <ArrowRight size={16} />
+            <button type="submit" className="button button-dark" disabled={!formsAreConfigured}>
+              {formsAreConfigured ? (
+                <>
+                  Share your story idea <ArrowRight size={16} />
+                </>
+              ) : (
+                "Form not configured yet"
+              )}
             </button>
           </form>
         </div>

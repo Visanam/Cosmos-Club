@@ -2,15 +2,16 @@ import { ArrowLeft, ArrowRight, BellRing, Check, Lock, Sparkles } from "lucide-r
 import { useMemo } from "react";
 import { Link } from "wouter";
 import { Seo } from "@/components/Seo";
+import { FORM_ENDPOINT, WEB3FORMS_ACCESS_KEY, formsAreConfigured } from "@/lib/forms";
 import { getPricingForTimezone } from "@/lib/visanam";
 
 /**
- * VISANAM-WAITLIST-FORM-V3
+ * VISANAM-WAITLIST-FORM-V4
  *
  * Season 1 waitlist. Payments are not live yet, so this page collects an email
  * instead of taking a card.
  *
- * The form is plain HTML and posts to FormSubmit, which emails the signup
+ * The form is plain HTML and posts to Web3Forms, which emails the signup
  * straight to us. Earlier versions used an embedded third-party form and then a
  * link to one; both were blocked or awkward in real browsers. Plain fields work
  * everywhere and cannot be broken by a script.
@@ -19,8 +20,6 @@ import { getPricingForTimezone } from "@/lib/visanam";
  * is a child and their personal data needs verifiable parental consent; COPPA
  * and GDPR-K impose similar duties elsewhere. We only need an age range.
  */
-
-const FORM_ENDPOINT = "https://formsubmit.co/visanammags@gmail.com";
 
 const includes = [
   "Six illustrated digital episodes",
@@ -96,16 +95,16 @@ export default function Checkout() {
               </div>
 
               <form action={FORM_ENDPOINT} method="POST">
-                <input type="hidden" name="_subject" value="New Visanam waitlist signup" />
-                <input type="hidden" name="_captcha" value="false" />
-                <input type="hidden" name="_template" value="table" />
-                <input type="hidden" name="_next" value="https://visanam.net/checkout?sent=1" />
+                <input type="hidden" name="access_key" value={WEB3FORMS_ACCESS_KEY} />
+                <input type="hidden" name="subject" value="New Visanam waitlist signup" />
+                <input type="hidden" name="from_name" value="Visanam website" />
+                <input type="hidden" name="redirect" value="https://visanam.net/checkout?sent=1" />
                 <input
-                  type="text"
-                  name="_honey"
+                  type="checkbox"
+                  name="botcheck"
                   style={{ display: "none" }}
                   tabIndex={-1}
-                  autoComplete="off"
+                  aria-hidden="true"
                 />
 
                 <p
@@ -116,16 +115,7 @@ export default function Checkout() {
                 </p>
 
                 {sent && (
-                  <p
-                    style={{
-                      margin: 0,
-                      padding: "12px 14px",
-                      borderRadius: 10,
-                      background: "#edf3e7",
-                      color: "#2f5a4c",
-                      fontSize: 13,
-                    }}
-                  >
+                  <p className="form-sent" role="status">
                     You’re on the list. We’ll email you the moment Season 1 opens.
                   </p>
                 )}
@@ -144,15 +134,25 @@ export default function Checkout() {
 
                 <label htmlFor="waitlist-age">
                   Your child’s age
-                  <select id="waitlist-age" name="childAgeBand" defaultValue="6–7 years" required>
+                  <select id="waitlist-age" name="Child age band" defaultValue="6–7 years" required>
                     <option value="6–7 years">6–7 years</option>
                     <option value="8–9 years">8–9 years</option>
                     <option value="10–12 years">10–12 years</option>
                   </select>
                 </label>
 
-                <button type="submit" className="button button-dark checkout-submit">
-                  Join the Season 1 list <ArrowRight size={16} />
+                <button
+                  type="submit"
+                  className="button button-dark checkout-submit"
+                  disabled={!formsAreConfigured}
+                >
+                  {formsAreConfigured ? (
+                    <>
+                      Join the Season 1 list <ArrowRight size={16} />
+                    </>
+                  ) : (
+                    "Form not configured yet"
+                  )}
                 </button>
 
                 <p className="checkout-secure" style={{ margin: 0 }}>
