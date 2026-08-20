@@ -1,15 +1,16 @@
 import { defineConfig } from "drizzle-kit";
 
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error("DATABASE_URL is required to run drizzle commands");
+const directDatabaseUrl = process.env.DIRECT_DATABASE_URL;
+
+if (!directDatabaseUrl) {
+  throw new Error("DIRECT_DATABASE_URL is required for Drizzle migration commands.");
 }
 
 export default defineConfig({
   schema: "./drizzle/schema.ts",
-  out: "./drizzle",
-  dialect: "mysql",
+  out: "./drizzle/migrations",
+  dialect: "postgresql",
   dbCredentials: {
-    url: connectionString,
+    url: directDatabaseUrl,
   },
 });

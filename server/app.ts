@@ -1,44 +1,95 @@
-import express, { type Express } from "express";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./_core/oauth";
-import { appRouter } from "./routers";
-import { createContext } from "./_core/context";
-import { registerStripeWebhook } from "./stripeWebhook";
-
 /**
- * Builds the API. Deliberately does NOT call listen() and does NOT serve the
- * front-end, so the exact same app can run in three places:
- *
- *   • local dev      — server/_core/index.ts wraps it with Vite middleware
- *   • a normal box   — server/_core/index.ts serves dist/public statically
- *   • Vercel         — api/index.ts exports it as a serverless function, and
- *                      Vercel's CDN serves the built front-end
+ * B1 REST API: origin-closed, JSON-only, and independent of the retired platform.
+ * Future endpoint modules must preserve the documented JSON error envelope.
  */
-export function createApp(): Express {
-  const app = express();
+import { randomUUID } from "node:crypto";
+import express, { type ErrorRequestHandler, type Express, type RequestHandler } from "express";
+import { pingDatabase } from "./db";
 
-  // Stripe signature verification needs the raw body, so this must be
-  // registered before any JSON body parser touches the request.
-  registerStripeWebhook(app);
+const BACKEND_VERSION = "b0.1";
 
-  app.use(express.json({ limit: "5mb" }));
-  app.use(express.urlencoded({ limit: "5mb", extended: true }));
-
-  // OAuth is optional. Without a portal configured the routes simply never
-  // succeed, and moderation falls back to ADMIN_TOKEN.
-  registerOAuthRoutes(app);
-
-  app.get("/api/health", (_req, res) => {
-    res.json({ ok: true, time: new Date().toISOString() });
-  });
-
-  app.use(
-    "/api/trpc",
-    createExpressMiddleware({
-      router: appRouter,
-      createContext,
+function log(event: string, details: Record<string, unknown> = {}): void {
+  console.log(
+    JSON.stringify({
+      level: "info",
+      event,
+      time: new Date().toISOString(),
+      ...details,
     })
   );
+}
 
+const requestLogger: RequestHandler = (req, res, next) => {
+  const requestId = req.header("x-request-id")?.slice(0, 128) || randomUUID();
+  res.setHeader("x-request-id", requestId);
+
+  const startedAt = Date.now();
+  res.on("finish", () => {
+    log("http_request", {
+      requestId,
+      method: req.method,
+      path: req.path,
+      status: res.statusCode,
+      durationMs: Date.now() - startedAt,
+    });
+  });
+
+  next();
+};
+
+const errorHandler: ErrorRequestHandler = (error, req, res, _next) => {
+  const requestId = String(res.getHeader("x-request-id") || randomUUID());
+  log("api_error", {
+    requestId,
+    method: req.method,
+    path: req.path,
+    errorType: error instanceof Error ? error.name : "UnknownError",
+  });
+
+  if (res.headersSent) {
+    return;
+  }
+
+  res.status(500).json({
+    error: {
+      code: "INTERNAL_ERROR",
+      message: "Something went wrong. Please try again.",
+      requestId,
+    },
+  });
+};
+
+/** Builds an Express handler for both Vercel and the local development shim. */
+export function createApp(): Express {
+  const app = express();
+  app.disable("x-powered-by");
+  app.use(requestLogger);
+  app.use(express.json({ limit: "100kb" }));
+
+  app.get("/api/health", async (_req, res) => {
+    try {
+      await pingDatabase();
+      res.status(200).json({
+        ok: true,
+        version: BACKEND_VERSION,
+        db: "up",
+        time: new Date().toISOString(),
+      });
+    } catch {
+      // Deliberately never expose a connection string, SQL error, or stack trace.
+      res.status(503).json({ ok: false, db: "down" });
+    }
+  });
+
+  app.use("/api", (_req, res) => {
+    res.status(404).json({
+      error: {
+        code: "NOT_FOUND",
+        message: "This API route does not exist.",
+      },
+    });
+  });
+
+  app.use(errorHandler);
   return app;
 }

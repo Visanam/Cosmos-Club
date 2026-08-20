@@ -1,76 +1,99 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
-
 /**
- * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
+ * B1 database model: Neon Postgres only. All child-name, precise-age, payment,
+ * Manus OAuth, and public-comment data models are intentionally absent.
  */
-export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
-  id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+import { sql } from "drizzle-orm";
+import { customType, index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+
+const citext = customType<{ data: string; driverData: string }>({
+  dataType() {
+    return "citext";
+  },
 });
+
+export const users = pgTable("users", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  email: citext("email").notNull().unique(),
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+  username: citext("username").notNull().unique(),
+  usernameFold: text("username_fold")
+    .generatedAlwaysAs(
+      sql`replace(replace(replace(translate(lower("username"), '015', 'ols'), '.', ''), '_', ''), '-', '')`
+    )
+    .notNull()
+    .unique(),
+  displayName: text("display_name"),
+  passwordHash: text("password_hash").notNull(),
+  role: text("role").notNull().default("user"),
+  status: text("status").notNull().default("active"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+});
+
+export const sessions = pgTable(
+  "sessions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    userAgent: text("user_agent"),
+    ipHash: text("ip_hash"),
+  },
+  table => [index("sessions_user_id_idx").on(table.userId), index("sessions_expires_at_idx").on(table.expiresAt)]
+);
+
+export const emailTokens = pgTable(
+  "email_tokens",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull().unique(),
+    purpose: text("purpose").notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+  },
+  table => [index("email_tokens_user_id_idx").on(table.userId), index("email_tokens_expires_at_idx").on(table.expiresAt)]
+);
+
+export const leads = pgTable("leads", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  type: text("type").notNull(),
+  schoolName: text("school_name"),
+  contactName: text("contact_name").notNull(),
+  contactEmail: citext("contact_email").notNull(),
+  contactPhone: text("contact_phone").notNull(),
+  gradeRange: text("grade_range"),
+  eventType: text("event_type"),
+  message: text("message").notNull(),
+  source: text("source").notNull().default("website"),
+  consentAt: timestamp("consent_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const savedMoments = pgTable(
+  "saved_moments",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    situationKey: text("situation_key").notNull(),
+    ageBand: text("age_band").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  table => [index("saved_moments_user_id_idx").on(table.userId)]
+);
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
-
-export const leads = mysqlTable("leads", {
-  id: int("id").autoincrement().primaryKey(),
-  type: mysqlEnum("type", ["school", "event"]).notNull(),
-  schoolName: varchar("schoolName", { length: 255 }),
-  contactName: varchar("contactName", { length: 255 }).notNull(),
-  contactEmail: varchar("contactEmail", { length: 320 }).notNull(),
-  contactPhone: varchar("contactPhone", { length: 64 }).notNull(),
-  gradeRange: varchar("gradeRange", { length: 128 }),
-  eventType: varchar("eventType", { length: 128 }),
-  message: text("message").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
+export type Lead = typeof leads.$inferSelect;
 export type InsertLead = typeof leads.$inferInsert;
-
-export const storyComments = mysqlTable("storyComments", {
-  id: int("id").autoincrement().primaryKey(),
-  page: varchar("page", { length: 64 }).notNull(),
-  displayName: varchar("displayName", { length: 80 }).notNull(),
-  message: text("message").notNull(),
-  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  reviewedAt: timestamp("reviewedAt"),
-});
-
-export type InsertStoryComment = typeof storyComments.$inferInsert;
-
-/**
- * A completed Stripe purchase. Written by the webhook so fulfilment never has
- * to be reconstructed from the Stripe dashboard — the value focus captured at
- * checkout is what the parent wraparound is built from.
- */
-export const orders = mysqlTable("orders", {
-  id: int("id").autoincrement().primaryKey(),
-  stripeSessionId: varchar("stripeSessionId", { length: 255 }).notNull().unique(),
-  parentName: varchar("parentName", { length: 255 }),
-  customerEmail: varchar("customerEmail", { length: 320 }),
-  childNameAge: varchar("childNameAge", { length: 255 }),
-  valueFocus: varchar("valueFocus", { length: 100 }),
-  country: varchar("country", { length: 64 }),
-  currency: varchar("currency", { length: 8 }),
-  /** Amount actually charged, in the currency's smallest unit (paise, cents). */
-  amount: int("amount"),
-  status: mysqlEnum("orderStatus", ["paid", "refunded"]).default("paid").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
-
-export type Order = typeof orders.$inferSelect;
-export type InsertOrder = typeof orders.$inferInsert;
