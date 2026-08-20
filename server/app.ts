@@ -4,9 +4,9 @@
  */
 import { randomUUID } from "node:crypto";
 import express, { type ErrorRequestHandler, type Express, type RequestHandler } from "express";
-import { pingDatabase } from "./db";
+import { pingDatabase } from "./db.js";
 
-const BACKEND_VERSION = "b0.1";
+const BACKEND_VERSION = "b0.2";
 
 function log(event: string, details: Record<string, unknown> = {}): void {
   console.log(

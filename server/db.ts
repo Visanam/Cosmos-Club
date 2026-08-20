@@ -4,8 +4,8 @@
  */
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
-import * as schema from "../drizzle/schema";
-import { requireDatabaseUrl } from "./env";
+import * as schema from "../drizzle/schema.js";
+import { requireDatabaseUrl } from "./env.js";
 
 type Database = NodePgDatabase<typeof schema>;
 
